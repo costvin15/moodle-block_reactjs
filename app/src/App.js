@@ -1,42 +1,36 @@
 import React, {useEffect, useState} from 'react';
-import logo from './logo.svg';
+import {Button} from '@material-ui/core';
+import Provider from './provider';
 import './App.css';
 
 function App() {
   const [clicks, setClicks] = useState(0);
-  const [data, setData] = useState({});
+  const [courses, setCourses] = useState([]);
 
-  const getUserInfo = async () => {
-    const wsfunction = 'core_webservice_get_site_info';
-    const response = await fetch(`/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=${wsfunction}&wstoken=${document.wstoken}`);
-    const data = await response.json();
-    setData(data);
+  const getRecentlyAccessedCourses = async () => {
+    const {userid} = await Provider.callMoodleWebService('core_webservice_get_site_info');
+    const courses = await Provider.callMoodleWebService('core_enrol_get_users_courses', {userid});
+    courses.sort((a, b) => {
+      if (a.lastaccess > b.lastaccess) {
+        return -1;
+      } else if (a.lastaccess < b.lastaccess) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+    setCourses(courses);
   };
 
   useEffect(() => {
-    getUserInfo();
+    getRecentlyAccessedCourses();
   }, []);
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Usuário: {data?.fullname}<br />
-          Site: {data?.sitename}
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {clicks} cliques
-        </a>
-        <button onClick={() => {
-          setClicks(clicks + 4);
-        }}>Click me!</button>
-      </header>
+      {courses.map((course) => (
+        <p>{course.displayname}</p>
+      ))}
     </div>
   );
 }
