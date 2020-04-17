@@ -11,3 +11,7 @@ mv $mainfilename main.js
 
 auxfilename=`ls | grep "^2\..*.chunk.js$"`
 mv $auxfilename 2.js
+
+cd ../css
+maincssfilename=`ls | grep "^main\..*.chunk.css$"`
+mv $maincssfilename main.css
